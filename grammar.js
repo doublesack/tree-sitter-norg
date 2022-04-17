@@ -35,7 +35,20 @@ module.exports = grammar({
         [$.inline_math, $._paragraph_element],
         [$.variable, $._paragraph_element],
 
-        [$._verbatim_segment, $.link]
+        [$.unordered_link1, $.paragraph],
+        [$.unordered_link2, $.paragraph],
+        [$.unordered_link3, $.paragraph],
+        [$.unordered_link4, $.paragraph],
+        [$.unordered_link5, $.paragraph],
+        [$.unordered_link6, $.paragraph],
+        [$.ordered_link1, $.paragraph],
+        [$.ordered_link2, $.paragraph],
+        [$.ordered_link3, $.paragraph],
+        [$.ordered_link4, $.paragraph],
+        [$.ordered_link5, $.paragraph],
+        [$.ordered_link6, $.paragraph],
+
+        [$._paragraph_element],
     ],
 
     externals: $ => [
@@ -45,8 +58,8 @@ module.exports = grammar({
         $.lowercase_word,
         $.capitalized_word,
 
-        $._line_break,
-        $._paragraph_break,
+        $.line_break,
+        $.paragraph_break,
 
         $.escape_sequence_prefix,
 
@@ -111,31 +124,25 @@ module.exports = grammar({
         $.weak_paragraph_delimiter,
         $.horizontal_line,
 
-        $.link_begin,
+        $.link_description_begin,
+        $.link_description_end,
+        $.link_location_begin,
+        $.link_location_end,
         $.link_file_begin,
-        $.link_file_text,
         $.link_file_end,
-        $.link_location_generic,
-        $.link_location_url,
-        $.link_location_external_file,
-        $.link_location_heading1,
-        $.link_location_heading2,
-        $.link_location_heading3,
-        $.link_location_heading4,
-        $.link_location_heading5,
-        $.link_location_heading6,
-        $.link_location_marker,
-        $.link_location_definition,
-        $.link_location_footnote,
-        $.link_location_text,
-        $.link_end,
-        $.link_text_begin,
-        $.link_text,
-        $.link_text_end,
-
-        $.anchor_declaration_begin,
-        $.anchor_declaration_text,
-        $.anchor_declaration_end,
+        $.link_file_text,
+        $.link_target_url,
+        $.link_target_generic,
+        $.link_target_external_file,
+        $.link_target_marker,
+        $.link_target_definition,
+        $.link_target_footnote,
+        $.link_target_heading1,
+        $.link_target_heading2,
+        $.link_target_heading3,
+        $.link_target_heading4,
+        $.link_target_heading5,
+        $.link_target_heading6,
 
         $.ranged_tag_prefix,
         $.ranged_tag_end_prefix,
@@ -191,14 +198,15 @@ module.exports = grammar({
             choice(
                 prec(1,
                     choice(
-                        $._paragraph_break,
-                        $._line_break,
+                        alias($.paragraph_break, "_paragraph_break"),
+                        alias($.line_break, "_line_break"),
                         $.heading,
                         $.detached_modifier,
                         $.definition,
                         $.footnote,
                         $.tag,
                         $.horizontal_line,
+                        $.strong_paragraph_delimiter,
                         // Markers are separate from detached modifiers because they are the a l p h a modifier (consumes all elements)
                         $.marker,
                     )
@@ -221,7 +229,7 @@ module.exports = grammar({
                 $.paragraph,
 
                 optional(
-                    $._paragraph_break,
+                    alias($.paragraph_break, "_paragraph_break"),
                 )
             )
         ),
@@ -235,25 +243,29 @@ module.exports = grammar({
             $.anchor_declaration,
             $.anchor_definition,
             $.escape_sequence,
-            $.link_modifier,
-            $.attached_modifier,
-            alias($.bold_close, "_lowercase"),
-            alias($.italic_close, "_lowercase"),
-            alias($.strikethrough_close, "_lowercase"),
-            alias($.underline_close, "_lowercase"),
-            alias($.spoiler_close, "_lowercase"),
-            alias($.superscript_close, "_lowercase"),
-            alias($.subscript_close, "_lowercase"),
-            alias($.verbatim_close, "_lowercase"),
-            alias($.inline_comment_close, "_lowercase"),
-            alias($.inline_math_close, "_lowercase"),
-            alias($.variable_close, "_lowercase"),
+            seq(
+                optional($.link_modifier),
+                $.attached_modifier,
+                optional($.link_modifier),
+            ),
+            alias($.link_modifier, "_word"),
+            alias($.bold_close, "_word"),
+            alias($.italic_close, "_word"),
+            alias($.strikethrough_close, "_word"),
+            alias($.underline_close, "_word"),
+            alias($.spoiler_close, "_word"),
+            alias($.superscript_close, "_word"),
+            alias($.subscript_close, "_word"),
+            alias($.verbatim_close, "_word"),
+            alias($.inline_comment_close, "_word"),
+            alias($.inline_math_close, "_word"),
+            alias($.variable_close, "_word"),
         ),
 
         _multi_paragraph_element: $ =>
         repeat1(
             choice(
-                $._line_break,
+                alias($.line_break, "_line_break"),
                 $._paragraph_element,
                 $._conflict_open,
             ),
@@ -264,59 +276,54 @@ module.exports = grammar({
             seq(
                 repeat1(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         alias($.word, "_word"),
                         alias($.space, "_space"),
-                        alias($.trailing_modifier, "_lowercase"),
-                        alias($.escape_sequence_prefix, "_lowercase"),
-                        alias($.any_char, "_lowercase"),
-                        alias($.link_modifier, "_lowercase"),
-                        alias($.bold_open, "_lowercase"),
-                        alias($.bold_close, "_lowercase"),
-                        alias($.italic_open, "_lowercase"),
-                        alias($.italic_close, "_lowercase"),
-                        alias($.strikethrough_open, "_lowercase"),
-                        alias($.strikethrough_close, "_lowercase"),
-                        alias($.underline_open, "_lowercase"),
-                        alias($.underline_close, "_lowercase"),
-                        alias($.spoiler_open, "_lowercase"),
-                        alias($.spoiler_close, "_lowercase"),
-                        alias($.superscript_open, "_lowercase"),
-                        alias($.superscript_close, "_lowercase"),
-                        alias($.subscript_open, "_lowercase"),
-                        alias($.subscript_close, "_lowercase"),
-                        alias($.verbatim_open, "_lowercase"),
-                        alias($.verbatim_close, "_lowercase"),
-                        alias($.inline_comment_open, "_lowercase"),
-                        alias($.inline_comment_close, "_lowercase"),
-                        alias($.inline_math_open, "_lowercase"),
-                        alias($.inline_math_close, "_lowercase"),
-                        alias($.variable_open, "_lowercase"),
-                        alias($.variable_close, "_lowercase"),
-                        alias($.link_begin, "_lowercase"),
-                        alias($.link_file_begin, "_lowercase"),
-                        alias($.link_file_text, "_lowercase"),
-                        alias($.link_file_end, "_lowercase"),
-                        alias($.link_location_generic, "_lowercase"),
-                        alias($.link_location_url, "_lowercase"),
-                        alias($.link_location_external_file, "_lowercase"),
-                        alias($.link_location_heading1, "_lowercase"),
-                        alias($.link_location_heading2, "_lowercase"),
-                        alias($.link_location_heading3, "_lowercase"),
-                        alias($.link_location_heading4, "_lowercase"),
-                        alias($.link_location_heading5, "_lowercase"),
-                        alias($.link_location_heading6, "_lowercase"),
-                        alias($.link_location_marker, "_lowercase"),
-                        alias($.link_location_definition, "_lowercase"),
-                        alias($.link_location_footnote, "_lowercase"),
-                        alias($.link_location_text, "_lowercase"),
-                        alias($.link_end, "_lowercase"),
-                        alias($.link_text_begin, "_lowercase"),
-                        alias($.link_text, "_lowercase"),
-                        alias($.link_text_end, "_lowercase"),
-                        alias($.anchor_declaration_begin, "_lowercase"),
-                        alias($.anchor_declaration_text, "_lowercase"),
-                        alias($.anchor_declaration_end, "_lowercase"),
+                        alias($.trailing_modifier, "_word"),
+                        alias($.escape_sequence_prefix, "_word"),
+                        alias($.any_char, "_word"),
+                        alias($.link_modifier, "_word"),
+                        alias($.bold_open, "_word"),
+                        alias($.bold_close, "_word"),
+                        alias($.italic_open, "_word"),
+                        alias($.italic_close, "_word"),
+                        alias($.strikethrough_open, "_word"),
+                        alias($.strikethrough_close, "_word"),
+                        alias($.underline_open, "_word"),
+                        alias($.underline_close, "_word"),
+                        alias($.spoiler_open, "_word"),
+                        alias($.spoiler_close, "_word"),
+                        alias($.superscript_open, "_word"),
+                        alias($.superscript_close, "_word"),
+                        alias($.subscript_open, "_word"),
+                        alias($.subscript_close, "_word"),
+                        alias($.verbatim_open, "_word"),
+                        alias($.verbatim_close, "_word"),
+                        alias($.inline_comment_open, "_word"),
+                        alias($.inline_comment_close, "_word"),
+                        alias($.inline_math_open, "_word"),
+                        alias($.inline_math_close, "_word"),
+                        alias($.variable_open, "_word"),
+                        alias($.variable_close, "_word"),
+                        alias($.link_description_begin, "_word"),
+                        alias($.link_description_end, "_word"),
+                        alias($.link_location_begin, "_word"),
+                        alias($.link_location_end, "_word"),
+                        alias($.link_file_begin, "_word"),
+                        alias($.link_file_end, "_word"),
+                        alias($.link_file_text, "_word"),
+                        alias($.link_target_url, "_word"),
+                        alias($.link_target_generic, "_word"),
+                        alias($.link_target_external_file, "_word"),
+                        alias($.link_target_marker, "_word"),
+                        alias($.link_target_definition, "_word"),
+                        alias($.link_target_footnote, "_word"),
+                        alias($.link_target_heading1, "_word"),
+                        alias($.link_target_heading2, "_word"),
+                        alias($.link_target_heading3, "_word"),
+                        alias($.link_target_heading4, "_word"),
+                        alias($.link_target_heading5, "_word"),
+                        alias($.link_target_heading6, "_word"),
                     ),
                 ),
             ),
@@ -327,7 +334,7 @@ module.exports = grammar({
             repeat1(
                 choice(
                     $._paragraph_element,
-                    alias($._conflict_open, "_lowercase"),
+                    alias($._conflict_open, "_word"),
                 ),
             )
         ),
@@ -337,7 +344,7 @@ module.exports = grammar({
             repeat1(
                 choice(
                     $.paragraph_segment,
-                    $._line_break,
+                    alias($.line_break, "_line_break"),
                 )
             ),
         ),
@@ -423,17 +430,17 @@ module.exports = grammar({
         _conflict_open: $ =>
         prec.dynamic(-1,
             choice(
-                alias($.bold_open, "_lowercase"),
-                alias($.italic_open, "_lowercase"),
-                alias($.strikethrough_open, "_lowercase"),
-                alias($.underline_open, "_lowercase"),
-                alias($.spoiler_open, "_lowercase"),
-                alias($.verbatim_open, "_lowercase"),
-                alias($.superscript_open, "_lowercase"),
-                alias($.subscript_open, "_lowercase"),
-                alias($.inline_comment_open, "_lowercase"),
-                alias($.inline_math_open, "_lowercase"),
-                alias($.variable_open, "_lowercase"),
+                alias($.bold_open, "_word"),
+                alias($.italic_open, "_word"),
+                alias($.strikethrough_open, "_word"),
+                alias($.underline_open, "_word"),
+                alias($.spoiler_open, "_word"),
+                alias($.verbatim_open, "_word"),
+                alias($.superscript_open, "_word"),
+                alias($.subscript_open, "_word"),
+                alias($.inline_comment_open, "_word"),
+                alias($.inline_math_open, "_word"),
+                alias($.variable_open, "_word"),
             )
         ),
 
@@ -454,81 +461,87 @@ module.exports = grammar({
 
         link_description: $ =>
         seq(
-            alias($.link_text_begin, "_begin"),
-            field("text", $.link_text),
-            alias($.link_text_end, "_end"),
-        ),
-
-        link_file: $ =>
-        seq(
-            alias($.link_file_begin, "_begin"),
-            field("location", $.link_file_text),
-            alias($.link_file_end, "_end"),
+            alias($.link_description_begin, "_begin"),
+            field("text", $.paragraph_segment),
+            alias($.link_description_end, "_end"),
         ),
 
         link_location: $ =>
         seq(
-            field("type", choice(
-                $.link_location_generic,
-                $.link_location_url,
-                $.link_location_external_file,
-                $.link_location_heading1,
-                $.link_location_heading2,
-                $.link_location_heading3,
-                $.link_location_heading4,
-                $.link_location_heading5,
-                $.link_location_heading6,
-                $.link_location_marker,
-                $.link_location_definition,
-                $.link_location_footnote,
-            )),
-            field("text", $.link_location_text),
+            alias($.link_location_begin, "_begin"),
+            choice(
+                $._link_target,
+                seq(
+                    $._link_file,
+                    optional(
+                        $._link_target,
+                    ),
+                ),
+            ),
+            alias($.link_location_end, "_end"),
         ),
 
+        _link_file: $ =>
+        seq(
+            alias($.link_file_begin, "_begin"),
+            field("file", $.link_file_text),
+            alias($.link_file_end, "_end"),
+        ),
+
+        _link_target: $ =>
+        choice(
+            $._link_target_markup,
+            $._link_target_verbatim,
+        ),
+
+        _link_target_markup: $ =>
+        seq(
+            field("type",
+                choice(
+                    $.link_target_generic,
+                    $.link_target_external_file,
+                    $.link_target_marker,
+                    $.link_target_definition,
+                    $.link_target_footnote,
+                    $.link_target_heading1,
+                    $.link_target_heading2,
+                    $.link_target_heading3,
+                    $.link_target_heading4,
+                    $.link_target_heading5,
+                    $.link_target_heading6,
+                ),
+            ),
+            field("text", $.paragraph_segment),
+        ),
+
+        _link_target_verbatim: $ =>
+        seq(
+            field("type",
+                choice(
+                    $.link_target_url,
+                ),
+            ),
+            field("text", alias($._verbatim_segment, $.paragraph_segment)),
+        ),
 
         link: $ =>
-        seq(
-            alias($.link_begin, "_begin"),
-            choice(
-                $.link_location,
-                seq(
-                    $.link_file,
-                    optional(
-                        $.link_location,
-                    )
-                )
-            ),
-            alias($.link_end, "_end"),
+        prec.right(2, seq(
+            $.link_location,
             optional(
                 $.link_description,
-            )
-        ),
+            ),
+        )),
 
-        anchor_declaration: $ =>
-        seq(
-            alias($.anchor_declaration_begin, "_begin"),
-            field("text", $.anchor_declaration_text),
-            alias($.anchor_declaration_end, "_end"),
-        ),
+        anchor_declaration: $ => $.link_description,
 
         anchor_definition: $ =>
         prec(2, seq(
-            $.anchor_declaration,
-            alias($.link_begin, "_begin"),
-            choice(
-                $.link_location,
-                seq(
-                    $.link_file,
-                    optional(
-                        $.link_location,
-                    )
-                )
-            ),
-            alias($.link_end, "_end"),
+            $.link_description,
+            $.link_location,
         )),
 
         unordered_link1: $ =>
-        prec.right(1,
+        prec.right(0,
             seq(
                 $.unordered_link1_prefix,
 
@@ -542,43 +555,19 @@ module.exports = grammar({
 
                 optional(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         field("description", $.paragraph),
                     )
                 ),
 
                 repeat(
-                    choice(
-                        $.unordered_link2,
-                        $.unordered_link3,
-                        $.unordered_link4,
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link2,
-                        $.ordered_link3,
-                        $.ordered_link4,
-                        $.ordered_link5,
-                        $.ordered_link6,
-
-                        $.unordered_list2,
-                        $.unordered_list3,
-                        $.unordered_list4,
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list2,
-                        $.ordered_list3,
-                        $.ordered_list4,
-                        $.ordered_list5,
-                        $.ordered_list6,
-                    )
+                    $._any_list_item_level_2,
                 )
             )
         ),
 
         unordered_link2: $ =>
-        prec.right(1,
+        prec.right(0,
             seq(
                 $.unordered_link2_prefix,
 
@@ -592,39 +581,19 @@ module.exports = grammar({
 
                 optional(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         field("description", $.paragraph),
                     )
                 ),
 
                 repeat(
-                    choice(
-                        $.unordered_link3,
-                        $.unordered_link4,
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link3,
-                        $.ordered_link4,
-                        $.ordered_link5,
-                        $.ordered_link6,
-
-                        $.unordered_list3,
-                        $.unordered_list4,
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list3,
-                        $.ordered_list4,
-                        $.ordered_list5,
-                        $.ordered_list6,
-                    )
+                    $._any_list_item_level_3,
                 )
             )
         ),
 
         unordered_link3: $ =>
-        prec.right(1,
+        prec.right(0,
             seq(
                 $.unordered_link3_prefix,
 
@@ -638,35 +607,19 @@ module.exports = grammar({
 
                 optional(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         field("description", $.paragraph),
                     )
                 ),
 
                 repeat(
-                    choice(
-                        $.unordered_link4,
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link4,
-                        $.ordered_link5,
-                        $.ordered_link6,
-
-                        $.unordered_list4,
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list4,
-                        $.ordered_list5,
-                        $.ordered_list6,
-                    )
+                    $._any_list_item_level_4,
                 )
             )
         ),
 
         unordered_link4: $ =>
-        prec.right(1,
+        prec.right(0,
             seq(
                 $.unordered_link4_prefix,
 
@@ -680,31 +633,19 @@ module.exports = grammar({
 
                 optional(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         field("description", $.paragraph),
                     )
                 ),
 
                 repeat(
-                    choice(
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link5,
-                        $.ordered_link6,
-
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list5,
-                        $.ordered_list6,
-                    )
+                    $._any_list_item_level_5,
                 )
             )
         ),
 
         unordered_link5: $ =>
-        prec.right(1,
+        prec.right(0,
             seq(
                 $.unordered_link5_prefix,
 
@@ -718,25 +659,19 @@ module.exports = grammar({
 
                 optional(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         field("description", $.paragraph),
                     )
                 ),
 
                 repeat(
-                    choice(
-                        $.unordered_link6,
-                        $.ordered_link6,
-
-                        $.unordered_list6,
-                        $.ordered_list6,
-                    )
+                    $._any_list_item_level_6,
                 )
             )
         ),
 
         unordered_link6: $ =>
-        prec.right(1,
+        prec.right(0,
             seq(
                 $.unordered_link6_prefix,
 
@@ -750,7 +685,7 @@ module.exports = grammar({
 
                 optional(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         field("description", $.paragraph),
                     )
                 ),
@@ -758,7 +693,7 @@ module.exports = grammar({
         ),
 
         ordered_link1: $ =>
-        prec.right(1,
+        prec.right(0,
             seq(
                 $.ordered_link1_prefix,
 
@@ -772,43 +707,19 @@ module.exports = grammar({
 
                 optional(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         field("description", $.paragraph),
                     )
                 ),
 
                 repeat(
-                    choice(
-                        $.unordered_link2,
-                        $.unordered_link3,
-                        $.unordered_link4,
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link2,
-                        $.ordered_link3,
-                        $.ordered_link4,
-                        $.ordered_link5,
-                        $.ordered_link6,
-
-                        $.unordered_list2,
-                        $.unordered_list3,
-                        $.unordered_list4,
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list2,
-                        $.ordered_list3,
-                        $.ordered_list4,
-                        $.ordered_list5,
-                        $.ordered_list6,
-                    )
+                    $._any_list_item_level_2,
                 )
             )
         ),
 
         ordered_link2: $ =>
-        prec.right(1,
+        prec.right(0,
             seq(
                 $.ordered_link2_prefix,
 
@@ -822,39 +733,19 @@ module.exports = grammar({
 
                 optional(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         field("description", $.paragraph),
                     )
                 ),
 
                 repeat(
-                    choice(
-                        $.unordered_link3,
-                        $.unordered_link4,
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link3,
-                        $.ordered_link4,
-                        $.ordered_link5,
-                        $.ordered_link6,
-
-                        $.unordered_list3,
-                        $.unordered_list4,
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list3,
-                        $.ordered_list4,
-                        $.ordered_list5,
-                        $.ordered_list6,
-                    )
+                    $._any_list_item_level_3,
                 )
             )
         ),
 
         ordered_link3: $ =>
-        prec.right(1,
+        prec.right(0,
             seq(
                 $.ordered_link3_prefix,
 
@@ -868,35 +759,19 @@ module.exports = grammar({
 
                 optional(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         field("description", $.paragraph),
                     )
                 ),
 
                 repeat(
-                    choice(
-                        $.unordered_link4,
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link4,
-                        $.ordered_link5,
-                        $.ordered_link6,
-
-                        $.unordered_list4,
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list4,
-                        $.ordered_list5,
-                        $.ordered_list6,
-                    )
+                    $._any_list_item_level_4,
                 )
             )
         ),
 
         ordered_link4: $ =>
-        prec.right(1,
+        prec.right(0,
             seq(
                 $.ordered_link4_prefix,
 
@@ -910,31 +785,19 @@ module.exports = grammar({
 
                 optional(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         field("description", $.paragraph),
                     )
                 ),
 
                 repeat(
-                    choice(
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link5,
-                        $.ordered_link6,
-
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list5,
-                        $.ordered_list6,
-                    )
+                    $._any_list_item_level_5,
                 )
             )
         ),
 
         ordered_link5: $ =>
-        prec.right(1,
+        prec.right(0,
             seq(
                 $.ordered_link5_prefix,
 
@@ -948,25 +811,19 @@ module.exports = grammar({
 
                 optional(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         field("description", $.paragraph),
                     )
                 ),
 
                 repeat(
-                    choice(
-                        $.unordered_link6,
-                        $.ordered_link6,
-
-                        $.unordered_list6,
-                        $.ordered_list6,
-                    )
+                    $._any_list_item_level_6,
                 )
             )
         ),
 
         ordered_link6: $ =>
-        prec.right(1,
+        prec.right(0,
             seq(
                 $.ordered_link6_prefix,
 
@@ -980,7 +837,7 @@ module.exports = grammar({
 
                 optional(
                     choice(
-                        $._line_break,
+                        alias($.line_break, "_line_break"),
                         field("description", $.paragraph),
                     )
                 ),
@@ -999,7 +856,7 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
-                repeat(prec(1, $._line_break)),
+                repeat(prec(1, alias($.line_break, "_line_break"))),
 
                 field(
                     "content",
@@ -1008,7 +865,7 @@ module.exports = grammar({
                         choice(
                             $._paragraph,
 
-                            $._paragraph_break,
+                            alias($.paragraph_break, "_paragraph_break"),
                             $.detached_modifier,
                             $.definition,
                             $.footnote,
@@ -1025,10 +882,7 @@ module.exports = grammar({
                 ),
 
                 optional(
-                    choice(
-                        $.weak_paragraph_delimiter,
-                        $.strong_paragraph_delimiter,
-                    )
+                    $.weak_paragraph_delimiter,
                 )
             )
         ),
@@ -1045,7 +899,7 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
-                repeat(prec(1, $._line_break)),
+                repeat(prec(1, alias($.line_break, "_line_break"))),
 
                 field(
                     "content",
@@ -1054,7 +908,7 @@ module.exports = grammar({
                         choice(
                             $._paragraph,
 
-                            $._paragraph_break,
+                            alias($.paragraph_break, "_paragraph_break"),
                             $.detached_modifier,
                             $.definition,
                             $.footnote,
@@ -1087,7 +941,7 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
-                repeat(prec(1, $._line_break)),
+                repeat(prec(1, alias($.line_break, "_line_break"))),
 
                 field(
                     "content",
@@ -1096,7 +950,7 @@ module.exports = grammar({
                         choice(
                             $._paragraph,
 
-                            $._paragraph_break,
+                            alias($.paragraph_break, "_paragraph_break"),
                             $.detached_modifier,
                             $.definition,
                             $.footnote,
@@ -1128,7 +982,7 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
-                repeat(prec(1, $._line_break)),
+                repeat(prec(1, alias($.line_break, "_line_break"))),
 
                 field(
                     "content",
@@ -1137,7 +991,7 @@ module.exports = grammar({
                         choice(
                             $._paragraph,
 
-                            $._paragraph_break,
+                            alias($.paragraph_break, "_paragraph_break"),
                             $.detached_modifier,
                             $.definition,
                             $.footnote,
@@ -1168,7 +1022,7 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
-                repeat(prec(1, $._line_break)),
+                repeat(prec(1, alias($.line_break, "_line_break"))),
 
                 field(
                     "content",
@@ -1177,7 +1031,7 @@ module.exports = grammar({
                         choice(
                             $._paragraph,
 
-                            $._paragraph_break,
+                            alias($.paragraph_break, "_paragraph_break"),
                             $.detached_modifier,
                             $.definition,
                             $.footnote,
@@ -1207,7 +1061,7 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
-                repeat(prec(1, $._line_break)),
+                repeat(prec(1, alias($.line_break, "_line_break"))),
 
                 field(
                     "content",
@@ -1216,7 +1070,7 @@ module.exports = grammar({
                         choice(
                             $._paragraph,
 
-                            $._paragraph_break,
+                            alias($.paragraph_break, "_paragraph_break"),
                             $.detached_modifier,
                             $.definition,
                             $.footnote,
@@ -1258,7 +1112,7 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
-                optional(prec(1, $._line_break)),
+                optional(prec(1, alias($.line_break, "_line_break"))),
 
                 repeat(
                     choice(
@@ -1282,7 +1136,7 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
-                optional(prec(1, $._line_break)),
+                optional(prec(1, alias($.line_break, "_line_break"))),
 
                 repeat(
                     choice(
@@ -1305,7 +1159,7 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
-                optional(prec(1, $._line_break)),
+                optional(prec(1, alias($.line_break, "_line_break"))),
 
                 repeat(
                     choice(
@@ -1327,7 +1181,7 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
-                optional(prec(1, $._line_break)),
+                optional(prec(1, alias($.line_break, "_line_break"))),
 
                 repeat(
                     choice(
@@ -1348,7 +1202,7 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
-                optional(prec(1, $._line_break)),
+                optional(prec(1, alias($.line_break, "_line_break"))),
 
                 repeat(
                     $.quote6,
@@ -1366,51 +1220,75 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
-                optional(prec(1, $._line_break)),
+                optional(prec(1, alias($.line_break, "_line_break"))),
 
             )
+        ),
+
+        _any_list_item_level_1: $ =>
+        choice(
+            $.unordered_list1,
+            $.ordered_list1,
+            $.todo_item1,
+            $.unordered_link1,
+            $.ordered_link1,
+            $._any_list_item_level_2,
+        ),
+
+        _any_list_item_level_2: $ =>
+        choice(
+            $.unordered_list2,
+            $.ordered_list2,
+            $.todo_item2,
+            $.unordered_link2,
+            $.ordered_link2,
+            $._any_list_item_level_3,
+        ),
+
+        _any_list_item_level_3: $ =>
+        choice(
+            $.unordered_list3,
+            $.ordered_list3,
+            $.todo_item3,
+            $.unordered_link3,
+            $.ordered_link3,
+            $._any_list_item_level_4,
+        ),
+
+        _any_list_item_level_4: $ =>
+        choice(
+            $.unordered_list4,
+            $.ordered_list4,
+            $.todo_item4,
+            $.unordered_link4,
+            $.ordered_link4,
+            $._any_list_item_level_5,
+        ),
+
+        _any_list_item_level_5: $ =>
+        choice(
+            $.unordered_list5,
+            $.ordered_list5,
+            $.todo_item5,
+            $.unordered_link5,
+            $.ordered_link5,
+            $._any_list_item_level_6,
+        ),
+
+        _any_list_item_level_6: $ =>
+        choice(
+            $.unordered_list6,
+            $.ordered_list6,
+            $.todo_item6,
+            $.unordered_link6,
+            $.ordered_link6,
         ),
 
         // TODO: complete docs
         generic_list: $ =>
         prec.right(0,
             repeat1(
-                choice(
-                    $.unordered_list1,
-                    $.unordered_list2,
-                    $.unordered_list3,
-                    $.unordered_list4,
-                    $.unordered_list5,
-                    $.unordered_list6,
-
-                    $.ordered_list1,
-                    $.ordered_list2,
-                    $.ordered_list3,
-                    $.ordered_list4,
-                    $.ordered_list5,
-                    $.ordered_list6,
-
-                    $.todo_item1,
-                    $.todo_item2,
-                    $.todo_item3,
-                    $.todo_item4,
-                    $.todo_item5,
-                    $.todo_item6,
-
-                    $.unordered_link1,
-                    $.unordered_link2,
-                    $.unordered_link3,
-                    $.unordered_link4,
-                    $.unordered_link5,
-                    $.unordered_link6,
-
-                    $.ordered_link1,
-                    $.ordered_link2,
-                    $.ordered_link3,
-                    $.ordered_link4,
-                    $.ordered_link5,
-                    $.ordered_link6,
-                )
+                $._any_list_item_level_1,
             )
         ),
 
@@ -1425,37 +1303,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item2,
-                        $.todo_item3,
-                        $.todo_item4,
-                        $.todo_item5,
-                        $.todo_item6,
-
-                        $.unordered_list2,
-                        $.unordered_list3,
-                        $.unordered_list4,
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list2,
-                        $.ordered_list3,
-                        $.ordered_list4,
-                        $.ordered_list5,
-                        $.ordered_list6,
-
-                        $.unordered_link2,
-                        $.unordered_link3,
-                        $.unordered_link4,
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link2,
-                        $.ordered_link3,
-                        $.ordered_link4,
-                        $.ordered_link5,
-                        $.ordered_link6,
-                    )
+                    $._any_list_item_level_2,
                 )
             )
         ),
@@ -1471,32 +1319,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item3,
-                        $.todo_item4,
-                        $.todo_item5,
-                        $.todo_item6,
-
-                        $.unordered_list3,
-                        $.unordered_list4,
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list3,
-                        $.ordered_list4,
-                        $.ordered_list5,
-                        $.ordered_list6,
-
-                        $.unordered_link3,
-                        $.unordered_link4,
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link3,
-                        $.ordered_link4,
-                        $.ordered_link5,
-                        $.ordered_link6,
-                    )
+                    $._any_list_item_level_3,
                 )
             )
         ),
@@ -1512,27 +1335,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item4,
-                        $.todo_item5,
-                        $.todo_item6,
-
-                        $.unordered_list4,
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list4,
-                        $.ordered_list5,
-                        $.ordered_list6,
-
-                        $.unordered_link4,
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link4,
-                        $.ordered_link5,
-                        $.ordered_link6,
-                    )
+                    $._any_list_item_level_4,
                 )
             )
         ),
@@ -1548,22 +1351,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item5,
-                        $.todo_item6,
-
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list5,
-                        $.ordered_list6,
-
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link5,
-                        $.ordered_link6,
-                    )
+                    $._any_list_item_level_5,
                 )
             )
         ),
@@ -1579,13 +1367,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item6,
-                        $.unordered_list6,
-                        $.ordered_list6,
-                        $.unordered_link6,
-                        $.ordered_link6,
-                    )
+                    $._any_list_item_level_6,
                 )
             )
         ),
@@ -1613,37 +1395,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item2,
-                        $.todo_item3,
-                        $.todo_item4,
-                        $.todo_item5,
-                        $.todo_item6,
-
-                        $.unordered_list2,
-                        $.unordered_list3,
-                        $.unordered_list4,
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list2,
-                        $.ordered_list3,
-                        $.ordered_list4,
-                        $.ordered_list5,
-                        $.ordered_list6,
-
-                        $.unordered_link2,
-                        $.unordered_link3,
-                        $.unordered_link4,
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link2,
-                        $.ordered_link3,
-                        $.ordered_link4,
-                        $.ordered_link5,
-                        $.ordered_link6,
-                    )
+                    $._any_list_item_level_2,
                 )
             )
         ),
@@ -1659,32 +1411,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item3,
-                        $.todo_item4,
-                        $.todo_item5,
-                        $.todo_item6,
-
-                        $.unordered_list3,
-                        $.unordered_list4,
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list3,
-                        $.ordered_list4,
-                        $.ordered_list5,
-                        $.ordered_list6,
-
-                        $.unordered_link3,
-                        $.unordered_link4,
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link3,
-                        $.ordered_link4,
-                        $.ordered_link5,
-                        $.ordered_link6,
-                    )
+                    $._any_list_item_level_3,
                 )
             )
         ),
@@ -1700,27 +1427,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item4,
-                        $.todo_item5,
-                        $.todo_item6,
-
-                        $.unordered_list4,
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list4,
-                        $.ordered_list5,
-                        $.ordered_list6,
-
-                        $.unordered_link4,
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link4,
-                        $.ordered_link5,
-                        $.ordered_link6,
-                    )
+                    $._any_list_item_level_4,
                 )
             )
         ),
@@ -1736,22 +1443,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item5,
-                        $.todo_item6,
-
-                        $.unordered_list5,
-                        $.unordered_list6,
-
-                        $.ordered_list5,
-                        $.ordered_list6,
-
-                        $.unordered_link5,
-                        $.unordered_link6,
-
-                        $.ordered_link5,
-                        $.ordered_link6,
-                    )
+                    $._any_list_item_level_5,
                 )
             )
         ),
@@ -1767,13 +1459,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item6,
-                        $.unordered_list6,
-                        $.ordered_list6,
-                        $.unordered_link6,
-                        $.ordered_link6,
-                    )
+                    $._any_list_item_level_6,
                 )
             )
         ),
@@ -1800,7 +1486,7 @@ module.exports = grammar({
                     $.paragraph_segment
                 ),
 
-                repeat(prec(1, $._line_break)),
+                repeat(prec(1, alias($.line_break, "_line_break"))),
 
                 field(
                     "subtext",
@@ -1814,7 +1500,7 @@ module.exports = grammar({
                             $.definition,
                             $.footnote,
                             $.tag,
-                            $._paragraph_break,
+                            alias($.paragraph_break, "_paragraph_break"),
                         ),
                     ),
                 )
@@ -1822,6 +1508,18 @@ module.exports = grammar({
         ),
 
         // --------------------------------------------------
+        _any_todo_state: $ =>
+        choice(
+            $.todo_item_undone,
+            $.todo_item_pending,
+            $.todo_item_done,
+            $.todo_item_on_hold,
+            $.todo_item_cancelled,
+            $.todo_item_urgent,
+            $.todo_item_uncertain,
+            $.todo_item_recurring,
+        ),
+
         todo_item1: $ =>
         prec.right(0,
             seq(
@@ -1829,17 +1527,7 @@ module.exports = grammar({
 
                 field(
                     "state",
-
-                    choice(
-                        $.todo_item_undone,
-                        $.todo_item_pending,
-                        $.todo_item_done,
-                        $.todo_item_on_hold,
-                        $.todo_item_cancelled,
-                        $.todo_item_urgent,
-                        $.todo_item_uncertain,
-                        $.todo_item_recurring,
-                    ),
+                    $._any_todo_state,
                 ),
 
                 token.immediate(/\s+/),
@@ -1850,13 +1538,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item2,
-                        $.todo_item3,
-                        $.todo_item4,
-                        $.todo_item5,
-                        $.todo_item6,
-                    ),
+                    $._any_list_item_level_2,
                 ),
             )
         ),
@@ -1868,17 +1550,7 @@ module.exports = grammar({
 
                 field(
                     "state",
-
-                    choice(
-                        $.todo_item_undone,
-                        $.todo_item_pending,
-                        $.todo_item_done,
-                        $.todo_item_on_hold,
-                        $.todo_item_cancelled,
-                        $.todo_item_urgent,
-                        $.todo_item_uncertain,
-                        $.todo_item_recurring,
-                    )
+                    $._any_todo_state,
                 ),
 
                 token(/\s+/),
@@ -1889,12 +1561,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item3,
-                        $.todo_item4,
-                        $.todo_item5,
-                        $.todo_item6,
-                    ),
+                    $._any_list_item_level_3,
                 ),
             )
         ),
@@ -1906,17 +1573,7 @@ module.exports = grammar({
 
                 field(
                     "state",
-
-                    choice(
-                        $.todo_item_undone,
-                        $.todo_item_pending,
-                        $.todo_item_done,
-                        $.todo_item_on_hold,
-                        $.todo_item_cancelled,
-                        $.todo_item_urgent,
-                        $.todo_item_uncertain,
-                        $.todo_item_recurring,
-                    )
+                    $._any_todo_state,
                 ),
 
                 token(/\s+/),
@@ -1927,11 +1584,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item4,
-                        $.todo_item5,
-                        $.todo_item6,
-                    ),
+                    $._any_list_item_level_4,
                 ),
             )
         ),
@@ -1943,17 +1596,7 @@ module.exports = grammar({
 
                 field(
                     "state",
-
-                    choice(
-                        $.todo_item_undone,
-                        $.todo_item_pending,
-                        $.todo_item_done,
-                        $.todo_item_on_hold,
-                        $.todo_item_cancelled,
-                        $.todo_item_urgent,
-                        $.todo_item_uncertain,
-                        $.todo_item_recurring,
-                    )
+                    $._any_todo_state,
                 ),
 
                 token(/\s+/),
@@ -1964,10 +1607,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    choice(
-                        $.todo_item5,
-                        $.todo_item6,
-                    )
+                    $._any_list_item_level_5,
                 ),
             )
         ),
@@ -1979,17 +1619,7 @@ module.exports = grammar({
 
                 field(
                     "state",
-
-                    choice(
-                        $.todo_item_undone,
-                        $.todo_item_pending,
-                        $.todo_item_done,
-                        $.todo_item_on_hold,
-                        $.todo_item_cancelled,
-                        $.todo_item_urgent,
-                        $.todo_item_uncertain,
-                        $.todo_item_recurring,
-                    )
+                    $._any_todo_state,
                 ),
 
                 token(/\s+/),
@@ -2000,7 +1630,7 @@ module.exports = grammar({
                 ),
 
                 repeat(
-                    $.todo_item6,
+                    $._any_list_item_level_6,
                 ),
             )
         ),
@@ -2012,17 +1642,7 @@ module.exports = grammar({
 
                 field(
                     "state",
-
-                    choice(
-                        $.todo_item_undone,
-                        $.todo_item_pending,
-                        $.todo_item_done,
-                        $.todo_item_on_hold,
-                        $.todo_item_cancelled,
-                        $.todo_item_urgent,
-                        $.todo_item_uncertain,
-                        $.todo_item_recurring,
-                    )
+                    $._any_todo_state,
                 ),
 
                 token(/\s+/),
@@ -2066,7 +1686,7 @@ module.exports = grammar({
         ),
 
         single_definition: $ =>
-        seq(
+        prec.right(seq(
             $.single_definition_prefix,
 
             field(
@@ -2074,11 +1694,18 @@ module.exports = grammar({
                 $.paragraph_segment
             ),
 
+            repeat(
+                prec(1, choice(
+                    alias($.line_break, "_line_break"),
+                    alias($.paragraph_break, "_paragraph_break"),
+                )),
+            ),
+
             field(
                 "definition",
                 $.paragraph
             ),
-        ),
+        )),
 
         multi_definition: $ =>
         choice(
@@ -2090,12 +1717,17 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
+                choice(
+                    alias($.line_break, "_line_break"),
+                    alias($.paragraph_break, "_paragraph_break"),
+                ),
+
                 field(
                     "content",
                     repeat(
                         choice(
                             $._paragraph,
-                            $._paragraph_break,
+                            alias($.paragraph_break, "_paragraph_break"),
 
                             $.detached_modifier,
                             $.tag,
@@ -2116,7 +1748,7 @@ module.exports = grammar({
         ),
 
         single_footnote: $ =>
-        seq(
+        prec.right(seq(
             $.single_footnote_prefix,
 
             field(
@@ -2124,11 +1756,18 @@ module.exports = grammar({
                 $.paragraph_segment
             ),
 
+            repeat(
+                prec(1, choice(
+                    alias($.line_break, "_line_break"),
+                    alias($.paragraph_break, "_paragraph_break"),
+                )),
+            ),
+
             field(
                 "content",
                 $.paragraph
             ),
-        ),
+        )),
 
         multi_footnote: $ =>
         choice(
@@ -2140,12 +1779,17 @@ module.exports = grammar({
                     $.paragraph_segment,
                 ),
 
+                choice(
+                    alias($.line_break, "_line_break"),
+                    alias($.paragraph_break, "_paragraph_break"),
+                ),
+
                 field(
                     "content",
                     repeat(
                         choice(
                             $._paragraph,
-                            $._paragraph_break,
+                            alias($.paragraph_break, "_paragraph_break"),
 
                             $.detached_modifier,
                             $.tag,
@@ -2173,8 +1817,8 @@ module.exports = grammar({
                     alias(
                         choice(
                             $.paragraph_segment,
-                            $._line_break,
-                            $._paragraph_break,
+                            alias($.line_break, "_line_break"),
+                            alias($.paragraph_break, "_paragraph_break"),
                         ),
                         "_segment",
                     ),
@@ -2300,7 +1944,7 @@ module.exports = grammar({
             ),
 
             repeat(
-                $._paragraph_break,
+                alias($.paragraph_break, "_paragraph_break"),
             ),
         ),
 
